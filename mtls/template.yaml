@@ -54,6 +54,19 @@ spec:
         msg := sprintf("Missing required environment variable: %v", [parameters.proxy.env[j].name])
       }
 
+      violation[{"msg":msg, "details":{}}]{
+        containers := spec.containers
+        volumeMount := { name: mountPath |
+          proxy := find_proxy(containers, parameters)
+          parameters.proxy.volumeMounts[i].name == proxy.volumeMounts[i].name
+          parameters.proxy.volumeMounts[i].mountPath == proxy.volumeMounts[i].mountPath
+          name :=  parameters.proxy.volumeMounts[i].name
+          mountPath := parameters.proxy.volumeMounts[i].mountPath
+        }
+        count(volumeMount) == 0
+        msg := sprintf("Missing required volume mount: name=%v, mountPath=%v", [parameters.proxy.volumeMounts[i].name, parameters.proxy.volumeMounts[i].mountPath])
+      }
+
       violation[{"msg":msg, "details":{}}] {
         spec.automountServiceAccountToken != true
         msg := "automountServiceAccountToken must be set to 'true' to enable mTLS identity"

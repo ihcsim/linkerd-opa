@@ -83,3 +83,6 @@ spec:
         value: linkerd-destination.$(_l5d_ns).serviceaccount.identity.$(_l5d_ns).$(_l5d_trustdomain)
       - name: LINKERD2_PROXY_TAP_SVC_NAME
         value: linkerd-tap.$(_l5d_ns).serviceaccount.identity.$(_l5d_ns).$(_l5d_trustdomain)
+      volumeMounts:
+      - mountPath: /var/run/linkerd/identity/end-entity
+        name: linkerd-identity-end-entity

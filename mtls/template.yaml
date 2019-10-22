@@ -54,6 +54,12 @@ spec:
         msg := sprintf("Missing required environment variable: %v", [parameters.proxy.env[j].name])
       }
 
+      violation[{"msg":msg, "details":{}}] {
+        volumes := spec.volumes
+        not find_identity_volume(volumes, parameters)
+        msg := sprintf("Missing required volumes: %v", [parameters.volumes[_].name])
+      }
+
       violation[{"msg":msg, "details":{}}]{
         containers := spec.containers
         volumeMount := { name: mountPath |
@@ -79,4 +85,9 @@ spec:
       find_proxy(containers, parameters) = proxy {
         spec.containers[i].name == parameters.proxy.name
         proxy := spec.containers[i]
+      }
+
+      find_identity_volume(volumes, parameters) = volume {
+        spec.volumes[i].name == parameters.volumes[_].name
+        volume := spec.volumes[i]
       }

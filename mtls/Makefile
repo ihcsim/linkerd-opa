@@ -12,6 +12,7 @@ opa:
 
 policy:
 	kubectl -n gatekeeper-system wait --for=condition=ready pod/gatekeeper-controller-manager-0
+	kubectl label --overwrite ns kube-system config.linkerd.io/admission-webhooks=disabled
 	kubectl apply -f template.yaml
 	kubectl apply -f config.yaml
 	sleep 20s

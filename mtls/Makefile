@@ -14,7 +14,7 @@ policy:
 	kubectl -n gatekeeper-system wait --for=condition=ready pod/gatekeeper-controller-manager-0
 	kubectl apply -f template.yaml
 	kubectl apply -f config.yaml
-	sleep 5s
+	sleep 20s
 	kubectl apply -f constraint.yaml
 
 test:

@@ -47,11 +47,11 @@ spec:
         containers := spec.containers
         env := { variable |
           proxy := find_proxy(containers, parameters)
-          parameters.env[j].name == proxy.env[k].name
-          variable := parameters.env[j].name
+          parameters.proxy.env[j].name == proxy.env[k].name
+          variable := parameters.proxy.env[j].name
         }
         count(env) == 0
-        msg := sprintf("Missing required environment variable: %v", [parameters.env[j].name])
+        msg := sprintf("Missing required environment variable: %v", [parameters.proxy.env[j].name])
       }
 
       violation[{"msg":msg, "details":{}}] {

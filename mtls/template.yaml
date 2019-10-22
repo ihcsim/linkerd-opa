@@ -64,8 +64,8 @@ spec:
         containers := spec.containers
         volumeMount := { name: mountPath |
           proxy := find_proxy(containers, parameters)
-          parameters.proxy.volumeMounts[i].name == proxy.volumeMounts[i].name
-          parameters.proxy.volumeMounts[i].mountPath == proxy.volumeMounts[i].mountPath
+          parameters.proxy.volumeMounts[i].name == proxy.volumeMounts[j].name
+          parameters.proxy.volumeMounts[i].mountPath == proxy.volumeMounts[j].mountPath
           name :=  parameters.proxy.volumeMounts[i].name
           mountPath := parameters.proxy.volumeMounts[i].mountPath
         }

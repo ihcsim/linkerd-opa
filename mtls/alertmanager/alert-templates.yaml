@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: linkerd-alertmanager-templates
+  namespace: linkerd
+  labels:
+    linkerd.io/control-plane-component: alertmanager
+    linkerd.io/control-plane-ns: linkerd
+  annotations:
+    linkerd.io/created-by: linkerd/cli edge-19.10.4
+data:
+  default.tmpl: |
+    {{ define "__alertmanager" }}AlertManager{{ end }}
+    {{ define "__alertmanagerURL" }}{{ .ExternalURL }}/#/alerts?receiver={{ .Receiver }}{{ end }}
+    {{ define "__subject" }}[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.SortedPairs.Values | join " " }} {{ if gt (len .CommonLabels) (len .GroupLabels) }}({{ with .CommonLabels.Remove .GroupLabels.Names }}{{ .Values | join " " }}{{ end }}){{ end }}{{ end }}
+    {{ define "__description" }}{{ end }}
+    {{ define "__text_alert_list" }}{{ range . }}Labels:
+    {{ range .Labels.SortedPairs }} - {{ .Name }} = {{ .Value }}
+    {{ end }}Annotations:
+    {{ range .Annotations.SortedPairs }} - {{ .Name }} = {{ .Value }}
+    {{ end }}Source: {{ .GeneratorURL }}
+    {{ end }}{{ end }}
+    {{ define "slack.default.title" }}{{ template "__subject" . }}{{ end }}
+    {{ define "slack.default.username" }}{{ template "__alertmanager" . }}{{ end }}
+    {{ define "slack.default.fallback" }}{{ template "slack.default.title" . }} | {{ template "slack.default.titlelink" . }}{{ end }}
+    {{ define "slack.default.pretext" }}{{ end }}
+    {{ define "slack.default.titlelink" }}{{ template "__alertmanagerURL" . }}{{ end }}
+    {{ define "slack.default.iconemoji" }}{{ end }}
+    {{ define "slack.default.iconurl" }}{{ end }}
+    {{ define "slack.default.text" }}{{ end }}
+    {{ if gt (len .Alerts.Firing) 0 -}}
+    Alerts Firing:
+    {{ template "__text_alert_list" .Alerts.Firing }}
+    {{- end }}
+    {{ if gt (len .Alerts.Resolved) 0 -}}
+    Alerts Resolved:
+    {{ template "__text_alert_list" .Alerts.Resolved }}
+    {{- end }}
+    {{- end }}
+    {{ if gt (len .Alerts.Firing) 0 }}
+  slack.tmpl: |
+    {{ define "slack.devops.text" }}
+    {{range .Alerts}}{{.Annotations.DESCRIPTION}}
+    {{end}}
+    {{ end }}

@@ -1,0 +1,25 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: linkerd-alertmanager-config
+  namespace: linkerd
+  labels:
+    linkerd.io/control-plane-component: alertmanager
+    linkerd.io/control-plane-ns: linkerd
+  annotations:
+    linkerd.io/created-by: linkerd/cli edge-19.10.4
+data:
+  config.yml: |-
+    global:
+    templates:
+    - '/etc/alertmanager/*.tmpl'
+    route:
+      group_by: ['alertname', 'priority', 'job']
+      group_wait: 10s
+      repeat_interval: 30m
+      receiver: slack
+    receivers:
+    - name: slack
+      slack_configs:
+      - api_url: https://hooks.slack.com/serivces/foo/bar
+        channel: kubecon-mtls-demo

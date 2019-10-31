@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linkerd-alertmanager
+  namespace: linkerd
+  labels:
+    linkerd.io/control-plane-component: alertmanager
+    linkerd.io/control-plane-ns: linkerd
+  annotations:
+    linkerd.io/created-by: linkerd/cli edge-19.10.4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      linkerd.io/control-plane-ns: linkerd
+      linkerd.io/proxy-deployment: linkerd-alertmanager
+  template:
+    metadata:
+      name: alertmanager
+      labels:
+        linkerd.io/control-plane-ns: linkerd
+      annotations:
+        linkerd.io/created-by: linkerd/cli edge-19.10.4
+    spec:
+      containers:
+      - name: alertmanager
+        image: prom/alertmanager:v0.19.0
+        args:
+          - "--config.file=/etc/alertmanager/config.yml"
+          - "--storage.path=/alertmanager"
+        ports:
+        - name: alertmanager
+          containerPort: 9093
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/alertmanager
+        - name: templates-volume
+          mountPath: /etc/alertmanager-templates
+        - name: alertmanager
+          mountPath: /alertmanager
+      volumes:
+      - name: config-volume
+        configMap:
+          name: linkerd-alertmanager-config
+      - name: templates-volume
+        configMap:
+          name: linkerd-alertmanager-templates
+      - name: alertmanager
+        emptyDir: {}

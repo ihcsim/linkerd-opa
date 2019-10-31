@@ -82,6 +82,10 @@ emoji-rebuild2: emoji-rebuild
 
 opa-audit2: opa-audit
 
+.PHONY: alertmanager
+alertmanager:
+	linkerd inject --manual alertmanager | kubectl apply -f -
+
 mkube:
 	minikube start --profile demo --memory 8096m --vm-driver=kvm2
 	minikube profile demo

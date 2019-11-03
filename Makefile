@@ -13,36 +13,27 @@ check:
 	linkerd check
 	linkerd version
 
-dashboard:
-	@echo "$(COMMENT_COLOR)# launching Linkerd dashboard...$(NO_COLOR)"
+emoji-blue:
+	@echo "$(COMMENT_COLOR)# installing emoji to 'emoji-blue' namespace...$(NO_COLOR)"
+	kubectl create ns emojivoto-blue # trigger gatekeeper cache
 	@sleep 1
-	linkerd dashboard &
+	kubectl apply -f etc/emojivoto-blue.yml
 
-sniff-controller:
-	@pod=`kubectl -n linkerd get po -l linkerd.io/control-plane-component=controller -ojsonpath='{.items[0].metadata.name}'` ; \
-	echo "$(COMMENT_COLOR)# sniffing Linkerd controller...$(NO_COLOR)" ; \
-	sleep 1 ; \
-	kubectl sniff -n linkerd $${pod} -p -f "tcp and host not 127.0.0.1"
-
-emoji:
-	@echo "$(COMMENT_COLOR)# installing emoji application...$(NO_COLOR)"
-	@sleep 1
-	kubectl create ns emojivoto
-	@sleep 1
-	kubectl apply -f https://run.linkerd.io/emojivoto.yml
-
-sniff-emoji:
-	@pod=`kubectl -n emojivoto get po -l app=web-svc -ojsonpath='{.items[0].metadata.name}'`; \
+emoji-blue-sniff:
+	@pod=`kubectl -n emojivoto-blue get po -l app=web-svc -ojsonpath='{.items[0].metadata.name}'`; \
 	echo "$(COMMENT_COLOR)# sniffing emoji web...$(NO_COLOR)" ; \
 	sleep 1 ; \
-	kubectl sniff -n emojivoto $${pod} -f "tcp and host not 127.0.0.1"
+	kubectl sniff -n emojivoto-blue $${pod} -f "tcp and host not 127.0.0.1"
 
-emoji-inject:
+emoji-blue-inject:
 	@echo "$(COMMENT_COLOR)# injecting Linkerd proxy into emoji appliction...$(NO_COLOR)"
 	@sleep 1
-	kubectl -n emojivoto get deploy -oyaml | linkerd inject - | kubectl apply -f -
+	kubectl -n emojivoto-blue get deploy -oyaml | linkerd inject - | kubectl apply -f -
 
-sniff-emoji2: sniff-emoji
+alertmanager:
+	@echo "$(COMMENT_COLOR)# port-forward to alertmanager console... $(NO_COLOR)"
+	@sleep 1
+	kubectl -n linkerd port-forward svc/linkerd-alertmanager 9093 &
 
 opa:
 	@echo "$(COMMENT_COLOR)# installing OPA Gatekeeper...$(NO_COLOR)"
@@ -55,47 +46,39 @@ policy:
 	@echo "$(COMMENT_COLOR)# installing mTLS constaint template...$(NO_COLOR)"
 	@sleep 1
 	kubectl -n gatekeeper-system wait --for=condition=ready pod/gatekeeper-controller-manager-0
-	kubectl label --overwrite ns kube-system config.linkerd.io/admission-webhooks=disabled
 	kubectl apply -f template.yaml
 	kubectl apply -f config.yaml
-
-constraint:
 	@echo "$(COMMENT_COLOR)# installing mTLS constaint...$(NO_COLOR)"
-	@sleep 1
+	@sleep 15
 	kubectl apply -f constraint.yaml
 
-emoji-rebuild:
-	@echo "$(COMMENT_COLOR)# rebuilding emoji namespace...$(NO_COLOR)"
+emoji-green:
+	@echo "$(COMMENT_COLOR)# installing emoji to 'emoji-green' namespace...$(NO_COLOR)"
+	kubectl create ns emojivoto-green # trigger gatekeeper cache
 	@sleep 1
-	kubectl delete ns emojivoto
-	$(MAKE) emoji
+	kubectl apply -f etc/emojivoto-green.yml
+
+emoji-green-inject:
+	@echo "$(COMMENT_COLOR)# injecting Linkerd proxy into emoji appliction...$(NO_COLOR)"
+	@sleep 1
+	kubectl -n emojivoto-green get deploy -oyaml | linkerd inject - | kubectl apply -f -
 
 opa-audit:
 	kubectl describe linkerdmutualtls.constraints.gatekeeper.sh v0.0.1
-
-proxy-injector-down:
-	@echo "$(COMMENT_COLOR)# let's pretend the proxy injector is down...$(NO_COLOR)"
-	@sleep 1
-	kubectl -n linkerd scale deploy/linkerd-proxy-injector --replicas=0
-
-emoji-rebuild2: emoji-rebuild
-
-opa-audit2: opa-audit
-
-.PHONY: alertmanager
-alertmanager:
-	linkerd inject --manual alertmanager | kubectl apply -f -
 
 mkube:
 	minikube start --profile demo --memory 8096m --vm-driver=kvm2
 	minikube profile demo
 
 clean:
-	minikube delete
+	kubectl delete ns emojivoto-green &
+	kubectl delete ns emojivoto-blue &
+	linkerd install --ignore-cluster| kubectl delete -f - &
+	kubectl delete crd configs.config.gatekeeper.sh constrainttemplates.templates.gatekeeper.sh
+	kubectl delete ns gatekeeper-system
 
-.PHONY: linkerd-%
-linkerd-%:
-	linkerd $*
+purge:
+	minikube delete
 
 test:
 	opa test -v --explain=notes .

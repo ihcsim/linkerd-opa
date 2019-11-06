@@ -12,7 +12,7 @@
 ###############################################################################
 
 # the speed to "type" the text
-TYPE_SPEED=15
+TYPE_SPEED=9
 
 # no wait after "p" or "pe"
 NO_WAIT=false
@@ -39,8 +39,8 @@ C_NUM=0
 
 # prompt and command color which can be overriden
 DEMO_PROMPT="$ "
-DEMO_CMD_COLOR=$WHITE
-DEMO_COMMENT_COLOR=$GREY
+DEMO_CMD_COLOR=$PURPLE
+DEMO_COMMENT_COLOR=$BLUE
 
 ##
 # prints the script usage

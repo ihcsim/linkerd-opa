@@ -35,11 +35,7 @@ spec:
 
       violation[{"msg":msg, "details":{}}]{
         containers := spec.containers
-        annotation := { annotation |
-          parameters.metadata.annotations[key] == meta.annotations[key]
-          annotation := parameters.metadata.annotations[key]
-        }
-        count(annotation) == 0
+        not parameters.metadata.annotations[key] == meta.annotations[key]
         msg := sprintf("Missing required annotation %v=%v", [key, parameters.metadata.annotations[key]])
       }
 
@@ -87,7 +83,6 @@ spec:
         proxy := spec.containers[i]
       }
 
-      find_identity_volume(volumes, parameters) = volume {
-        spec.volumes[i].name == parameters.volumes[_].name
-        volume := spec.volumes[i]
+      find_identity_volume(volumes, parameters) {
+        spec.volumes[_].name == parameters.volumes[_].name
       }

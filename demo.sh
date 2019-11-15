@@ -3,6 +3,12 @@
 . ./etc/demo-magic.sh -n
 
 clear
+p "# install the blue/green emoji applications..."
+pe "kubectl apply -f etc/emojivoto-blue.yml -f etc/emojivoto-green.yml"
+pe "kubectl -n emojivoto-blue get po"
+wait
+
+clear
 p "# install the Linkerd control plane..."
 pe "linkerd install | kubectl apply -f -"
 PROMPT_TIMEOUT=3
@@ -15,12 +21,6 @@ PROMPT_TIMEOUT=0
 wait
 
 clear
-p "# install the blue emoji application..."
-pe "kubectl apply -f etc/emojivoto-blue.yml"
-pe "kubectl -n emojivoto-blue get po"
-wait
-
-clear
 p "# use ksniff to sniff the web component..."
 pe "pod=$(kubectl -n emojivoto-blue get po -l app=web-svc -ojsonpath='{.items[0].metadata.name}')"
 pe "kubectl sniff -n emojivoto-blue ${pod} -f '(((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)'"
@@ -30,13 +30,13 @@ p "# inject the blue emoji application with Linkerd proxy..."
 pe "kubectl -n emojivoto-blue get deploy -oyaml | linkerd inject - | kubectl apply -f -"
 PROMPT_TIMEOUT=5
 wait
-PROMPT_TIMEOUT=0
 pe "watch kubectl -n emojivoto-blue get po"
 
 p "# repeat sniffing action..."
 pe "pod=$(kubectl -n emojivoto-blue get po -l app=web-svc -ojsonpath='{.items[0].metadata.name}')"
 pe "kubectl sniff -n emojivoto-blue ${pod} -f 'tcp and host not 127.0.0.1'"
 p "# 🔒🔒🔒...👍👍👍"
+PROMPT_TIMEOUT=0
 wait
 
 clear
@@ -60,28 +60,13 @@ wait
 
 pe "kubectl describe constrainttemplates.templates.gatekeeper.sh linkerdmutualtls | less"
 wait
-PROMPT_TIMEOUT=0
 
 p "# install the mtls constraint..."
 pe "kubectl apply -f constraint.yaml"
 pe "kubectl describe linkerdmutualtls.constraints.gatekeeper.sh v0.0.1 | less"
 
 clear
-p "# install the green emoji application..."
-pe "kubectl create ns emojivoto-green"
-PROMPT_TIMEOUT=3
-wait
-PROMPT_TIMEOUT=0
-
-pe "kubectl apply -f etc/emojivoto-green.yml"
-
-clear
-p "# check the pods..."
-pe "kubectl -n emojivoto-green get po"
-PROMPT_TIMEOUT=3
-wait
-p "# 😧😧😧..."
-wait
+p "# remember we still have another insecure emoji application in the 'green' namespace?"
 p "# let's see the audit events..."
 pe "kubectl describe linkerdmutualtls v0.0.1 | less"
 
@@ -92,5 +77,8 @@ wait
 PROMPT_TIMEOUT=0
 
 pe "watch kubectl -n emojivoto-green get po"
+
+p "# make sure all the violations are resolved..."
+pe "kubectl describe linkerdmutualtls v0.0.1 | less"
 p "# voila 🎉🎉🎉..."
 wait

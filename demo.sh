@@ -7,11 +7,11 @@ p "# install the Linkerd control plane..."
 pe "linkerd install | kubectl apply -f -"
 PROMPT_TIMEOUT=3
 wait
-PROMPT_TIMEOUT=0
 
 clear
 p "# check the control plane status..."
 pe "linkerd check"
+PROMPT_TIMEOUT=0
 wait
 
 clear
@@ -41,7 +41,7 @@ wait
 
 clear
 p "# install the OPA Gatekeeper..."
-pe "kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/master/deploy/gatekeeper.yaml"
+pe "kubectl apply -f gatekeeper.yaml"
 pe "kubectl -n gatekeeper-system wait --for=condition=ready pod/gatekeeper-controller-manager-0"
 PROMPT_TIMEOUT=2
 wait
@@ -51,7 +51,6 @@ p "# omit the kube-system and gatekeeper-system namespaces from rules validation
 pe "kubectl label ns kube-system config.linkerd.io/admission-webhooks=disabled"
 pe "kubectl label ns gatekeeper-system config.linkerd.io/admission-webhooks=disabled"
 wait
-PROMPT_TIMEOUT=0
 
 clear
 p "# install the mtls constraint template..."
@@ -60,7 +59,6 @@ PROMPT_TIMEOUT=5
 wait
 
 pe "kubectl describe constrainttemplates.templates.gatekeeper.sh linkerdmutualtls | less"
-PROMPT_TIMEOUT=10
 wait
 PROMPT_TIMEOUT=0
 
@@ -84,17 +82,8 @@ PROMPT_TIMEOUT=3
 wait
 p "# 😧😧😧..."
 wait
-PROMPT_TIMEOUT=0
-
-p "# check the replicaset..."
-pe "kubectl -n emojivoto-green get rs"
-PROMPT_TIMEOUT=3
-wait
-p "# 🤔🤔🤔..."
-wait
-PROMPT_TIMEOUT=0
-pe "rs=$(kubectl -n emojivoto-green get rs -l app=emoji-svc -ojsonpath='{.items[0].metadata.name}')"
-pe "kubectl -n emojivoto-green describe rs ${rs} | less"
+p "# let's see the audit events..."
+pe "kubectl describe linkerdmutualtls v0.0.1 | less"
 
 p "# inject the green emoji application with Linkerd proxy..."
 pe "kubectl -n emojivoto-green get deploy -oyaml | linkerd inject - | kubectl apply -f -"

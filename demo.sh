@@ -3,8 +3,8 @@
 . ./etc/demo-magic.sh -n
 
 clear
-p "# install the blue/green emoji applications..."
-pe "kubectl apply -f etc/emojivoto-blue.yml -f etc/emojivoto-green.yml"
+p "# install the blue emoji applications..."
+pe "kubectl apply -f etc/emojivoto-blue.yml"
 pe "kubectl -n emojivoto-blue get po"
 wait
 
@@ -40,10 +40,16 @@ PROMPT_TIMEOUT=0
 wait
 
 clear
+p "# install the green emoji applications..."
+pe "kubectl apply -f etc/emojivoto-green.yml"
+pe "kubectl -n emojivoto-green get po"
+PROMPT_TIMEOUT=2
+wait
+
+clear
 p "# install the OPA Gatekeeper..."
 pe "kubectl apply -f gatekeeper.yaml"
 pe "kubectl -n gatekeeper-system wait --for=condition=ready pod/gatekeeper-controller-manager-0"
-PROMPT_TIMEOUT=2
 wait
 
 clear
@@ -66,8 +72,7 @@ pe "kubectl apply -f constraint.yaml"
 pe "kubectl describe linkerdmutualtls.constraints.gatekeeper.sh v0.0.1 | less"
 
 clear
-p "# remember we still have another insecure emoji application in the 'green' namespace?"
-p "# let's see the audit events..."
+p "# let's see if Gatekeeper detected our insecure emoji application..."
 pe "kubectl describe linkerdmutualtls v0.0.1 | less"
 
 p "# inject the green emoji application with Linkerd proxy..."

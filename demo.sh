@@ -73,7 +73,7 @@ pe "kubectl describe linkerdmutualtls.constraints.gatekeeper.sh v0.0.1 | less"
 
 clear
 p "# let's see if Gatekeeper detected our insecure emoji application..."
-pe "kubectl describe linkerdmutualtls v0.0.1 | less"
+pe "kubectl describe linkerdmutualtls.constraints.gatekeeper.sh v0.0.1 | less"
 
 p "# inject the green emoji application with Linkerd proxy..."
 pe "kubectl -n emojivoto-green get deploy -oyaml | linkerd inject - | kubectl apply -f -"

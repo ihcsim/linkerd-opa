@@ -27,36 +27,43 @@ spec:
       spec = input.review.object.spec
       parameters = input.parameters
 
-      violation[{"msg":msg, "details":{}}] {
-        containers := spec.containers
-        not proxy(containers, parameters)
-        msg := sprintf("Missing proxy sidecar container: %v", [parameters.proxy.name])
-      }
-
-      violation[{"msg":msg, "details":{}}]{
-        containers := spec.containers
-        not parameters.metadata.annotations[key] == meta.annotations[key]
-        msg := sprintf("Missing required annotation %v=%v", [key, parameters.metadata.annotations[key]])
-      }
 
       violation[{"msg":msg, "details":{}}] {
+        containers := spec.containers
+        not spec_violation
+        msg := "Make sure you run linkerd inject to enable mTLS!"
+      }
+
+      spec_violation {
+        containers := spec.containers
+        proxy(containers, parameters)
+        # msg := sprintf("Missing proxy sidecar container: %v", [parameters.proxy.name])
+      }
+
+      spec_violation {
+        containers := spec.containers
+        parameters.metadata.annotations[key] == meta.annotations[key]
+        #msg := sprintf("Missing required annotation %v=%v", [key, parameters.metadata.annotations[key]])
+      }
+
+      spec_violation {
         containers := spec.containers
         env := { variable |
           proxy := find_proxy(containers, parameters)
           parameters.proxy.env[j].name == proxy.env[k].name
           variable := parameters.proxy.env[j].name
         }
-        count(env) == 0
-        msg := sprintf("Missing required environment variable: %v", [parameters.proxy.env[j].name])
+        count(env) > 0
+        #msg := sprintf("Missing required environment variable: %v", [parameters.proxy.env[j].name])
       }
 
-      violation[{"msg":msg, "details":{}}] {
+      spec_violation {
         volumes := spec.volumes
-        not find_identity_volume(volumes, parameters)
-        msg := sprintf("Missing required volumes: %v", [parameters.volumes[_].name])
+        find_identity_volume(volumes, parameters)
+        #msg := sprintf("Missing required volumes: %v", [parameters.volumes[_].name])
       }
 
-      violation[{"msg":msg, "details":{}}]{
+      spec_violation {
         containers := spec.containers
         volumeMount := { name: mountPath |
           proxy := find_proxy(containers, parameters)
@@ -65,13 +72,13 @@ spec:
           name :=  parameters.proxy.volumeMounts[i].name
           mountPath := parameters.proxy.volumeMounts[i].mountPath
         }
-        count(volumeMount) == 0
-        msg := sprintf("Missing required volume mount: name=%v, mountPath=%v", [parameters.proxy.volumeMounts[i].name, parameters.proxy.volumeMounts[i].mountPath])
+        count(volumeMount) > 0
+        #msg := sprintf("Missing required volume mount: name=%v, mountPath=%v", [parameters.proxy.volumeMounts[i].name, parameters.proxy.volumeMounts[i].mountPath])
       }
 
-      violation[{"msg":msg, "details":{}}] {
-        spec.automountServiceAccountToken != true
-        msg := "automountServiceAccountToken must be set to 'true' to enable mTLS identity"
+      spec_violation {
+        spec.automountServiceAccountToken == true
+        #msg := "automountServiceAccountToken must be set to 'true' to enable mTLS identity"
       }
 
       proxy(containers, parameters) {

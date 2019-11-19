@@ -2,18 +2,18 @@
 
 This repository contains the demo scripts used in the
 [_Enforcing Automatic mTLS with Linkerd and OPA Gatekeeper_ ](https://sched.co/UaY7)
-at KubeCon NA 2019.
+session at KubeCon NA 2019.
 
 [Linkerd](https://linkerd.io) is an ultralight service mesh for Kubernetes.
 [OPA Gatekeeper](https://www.openpolicyagent.org/docs/latest/kubernetes-introduction/)
 is a customizable Kubernetes admission webhook that helps enforce policies and
 strengthen governance. This demo shows how you can use them to enable automatic
-mTLS between your k8s services, and define and enforce policies to ensure
+mTLS between your K8s services, and define and enforce policies to ensure
 security compliance.
 
 ## Resources:
 
-* Presentation slides - Coming soon
+* Presentation slides - https://static.sched.com/hosted_files/kccncna19/c0/slides-v0.0.1.pdf
 * Recording - Coming soon
 
 ## Prerequisites

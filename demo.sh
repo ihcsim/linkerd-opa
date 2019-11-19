@@ -69,7 +69,7 @@ wait
 
 p "# install the mtls constraint..."
 pe "kubectl apply -f constraint.yaml"
-pe "kubectl describe linkerdmutualtls.constraints.gatekeeper.sh v0.0.1 | less"
+pe "less constraint.yaml"
 
 clear
 p "# let's see if Gatekeeper detected our insecure emoji application..."

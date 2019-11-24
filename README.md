@@ -14,7 +14,7 @@ security compliance.
 ## Resources:
 
 * Presentation slides - https://static.sched.com/hosted_files/kccncna19/c0/slides-v0.0.1.pdf
-* Recording - Coming soon
+* Recording - https://youtu.be/gMaGVHnvNfs
 
 ## Prerequisites
 The demo script is tested with the following software:
